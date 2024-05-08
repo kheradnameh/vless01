@@ -1,4 +1,4 @@
-// <!--GAMFC-->version base on commit 43fad05dcdae3b723c53c226f8181fc5bd47223e, time is 2023-06-22 15:20:02 UTC<!--GAMFC-END-->.
+// <!--GAMFC-->version base on commit 841ed4e9ff121dde0ed6a56ae800c2e6c4f66056, time is 2024-04-16 18:02:37 UTC<!--GAMFC-END-->.
 // @ts-ignore
 import { connect } from 'cloudflare:sockets';
 
@@ -6,11 +6,8 @@ import { connect } from 'cloudflare:sockets';
 // [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
 let userID = '788b7aa0-5f6d-4848-8ca0-c64932af8339';
 
-const proxyIPs = ['proxy.alighadrboland.ir','proxyy.alighadrboland.ir','proxyyy.alighadrboland.ir','proxyyyy.alighadrboland.ir','proxyyyyy.alighadrboland.ir'];
+let proxyIP = ['proxy.alighadrboland.ir','proxyy.alighadrboland.ir','proxyyy.alighadrboland.ir','proxyyyy.alighadrboland.ir','proxyyyyy.alighadrboland.ir'];
 
-let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
-
-let dohURL = 'https://cloudflare-dns.com/dns-query'; // https://cloudflare-dns.com/dns-query or https://dns.google/dns-query
 
 if (!isValidUUID(userID)) {
 	throw new Error('uuid is not valid');
@@ -19,7 +16,7 @@ if (!isValidUUID(userID)) {
 export default {
 	/**
 	 * @param {import("@cloudflare/workers-types").Request} request
-	 * @param {{UUID: string, PROXYIP: string, DNS_RESOLVER_URL: string}} env
+	 * @param {{UUID: string, PROXYIP: string}} env
 	 * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
 	 * @returns {Promise<Response>}
 	 */
@@ -27,7 +24,6 @@ export default {
 		try {
 			userID = env.UUID || userID;
 			proxyIP = env.PROXYIP || proxyIP;
-			dohURL = env.DNS_RESOLVER_URL || dohURL;
 			const upgradeHeader = request.headers.get('Upgrade');
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				const url = new URL(request.url);
@@ -558,7 +554,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
 	// only handle dns udp for now
 	transformStream.readable.pipeTo(new WritableStream({
 		async write(chunk) {
-			const resp = await fetch(dohURL, // dns server url
+			const resp = await fetch('https://1.1.1.1/dns-query',
 				{
 					method: 'POST',
 					headers: {
@@ -604,7 +600,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @returns {string}
  */
 function getVLESSConfig(userID, hostName) {
-	const vlessMain = `vless://${userID}@${hostName}:443?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`
+	const vlessMain = `vless://${userID}\u0040${hostName}:443?encryption=none&security=tls&sni=${hostName}&fp=randomized&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`
 	return `
 ################################################################
 v2ray
